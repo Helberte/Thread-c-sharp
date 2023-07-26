@@ -4,4 +4,57 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:background="#ccc"
+        android:id="@+id/linearLayout1"
+        android:paddingVertical="30dp"
+        android:gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:id="@+id/linearLayout2"
+            android:gravity="center"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <Button
+                android:id="@+id/buttonAperte"
+                android:text="Aperte"
+                android:layout_width="150dp"
+                android:layout_height="60dp"/>
+            <View
+                android:layout_width="10dp"
+                android:layout_height="1dp"/>
+            <Button
+                android:id="@+id/segundoBotao"
+                android:text="Mensagem"
+                android:layout_width="150dp"
+                android:layout_height="60dp"/>
+        </LinearLayout>
+      
+        <Spinner
+            android:id="@+id/spinnerMarca"
+            android:background="#ddd"
+            android:layout_marginTop="30dp"
+            android:layout_marginHorizontal="15dp"
+            android:layout_width="match_parent"
+            android:layout_height="45dp"/>           
+        <Spinner
+            android:id="@+id/spinnerModelo"
+            android:background="#ddd"
+            android:layout_marginTop="30dp"
+            android:layout_marginHorizontal="15dp"
+            android:layout_width="match_parent"
+            android:layout_height="45dp"/>       
+        <Spinner
+            android:id="@+id/spinnerAno"
+            android:background="#ddd"
+            android:layout_marginTop="30dp"
+            android:layout_marginHorizontal="15dp"
+            android:layout_width="match_parent"
+            android:layout_height="45dp"/>       
+    </LinearLayout>
 </RelativeLayout>
