@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <SelectedDevice>phone_h-dpi_3_7in_-_api_28</SelectedDevice>
+    <SelectedPlatformGroup>Emulator</SelectedPlatformGroup>
+    <ActiveDebugProfile>Phone H-DPI 3.7in - API 28 %28Android 9.0 – API 28%29</ActiveDebugProfile>
+    <DefaultDevice>phone_h-dpi_3_7in_-_api_28</DefaultDevice>
+  </PropertyGroup>
+</Project>
