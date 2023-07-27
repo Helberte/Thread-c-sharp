@@ -14,6 +14,8 @@ using Threads.API;
 using Threads.Models;
 using System.Threading.Tasks;
 using System.Net;
+using static Threads.MainActivity;
+using System.Net.Http;
 
 namespace Threads
 {
@@ -24,6 +26,7 @@ namespace Threads
 
         // gerais
         string TipoVeiculo = "2";
+        string MarcaId = "80";
 
         // main
         Button  buttonAperte  = null;
@@ -40,7 +43,7 @@ namespace Threads
         {
             base.OnCreate(savedInstanceState);
             Xamarin.Essentials.Platform.Init(this, savedInstanceState);
-
+                
             ExibeLayoutMain();
         }
 
@@ -54,7 +57,7 @@ namespace Threads
         #endregion
 
         #region Telas e Layouts
-
+          
         private void ExibeLayoutMain()
         {
             SetContentView(Resource.Layout.activity_main);
@@ -66,35 +69,15 @@ namespace Threads
             spinnerModelo = FindViewById<Spinner>(Resource.Id.spinnerModelo);
 
             // clicks
-            buttonAperte.Click += (sender, e) => {
+            //buttonAperte.Click += (sender, e) => {
+            //    Thread t = new Thread(() => { MetodoPesado(10); });
+            //    t.Start();
+            //};
 
-                Thread t = new Thread(() => { MetodoPesado(10); });
-                t.Start();
-            };
             segundoBotao.Click += (sender, e) => {
-
-                ServicePointManager.ServerCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true;
-
-                RestClient  client  = new RestClient("https://api.invertexto.com/v1/fipe/brands/2");
-                RestRequest request = new RestRequest() { Method = Method.Get };
-
-                request.AddParameter("token", "3946|jtoscPL4hxlXLvXVzwccAOSr0prj7UqP");
-
-                RestResponse response = client.Execute(request);
-
-                if (response.IsSuccessful)
-                {
-                    List<MarcasResponse> MarcasVeiculos = JsonConvert.DeserializeObject<List<MarcasResponse>>(response.Content);
-
-                    SpinnerMarcaAdapter spinnerAdapter = new SpinnerMarcaAdapter(this, MarcasVeiculos);
-
-                    spinnerMarca.Adapter = spinnerAdapter;
-                }        
-
-                spinnerMarca.ItemSelected += Spinner1_ItemSelected;
+                ListarMarcas();
             };
 
-            //ListarMarcas();
         }
 
         #endregion
@@ -118,7 +101,18 @@ namespace Threads
 
         private void Spinner1_ItemSelected(object sender, AdapterView.ItemSelectedEventArgs e)
         {
+            SpinnerMarcaAdapter adapter = (sender as Spinner).Adapter as SpinnerMarcaAdapter;
 
+            List<MarcasResponse> marcas = adapter.Items;
+
+            MarcaId = marcas[e.Position].Id.ToString();
+
+            ListarModelos();
+        }
+
+        private void SpinnerModelo_ItemSelected(object sender, AdapterView.ItemSelectedEventArgs e)
+        {
+            throw new NotImplementedException();
         }
 
         #endregion
@@ -127,8 +121,8 @@ namespace Threads
 
         private void ListarMarcas()
         {
-            //Task.Run(() =>
-            //{
+            Task.Run(() =>
+            {
                 try
                 {
                     List<MarcasResponse> MarcasVeiculos = JsonConvert.DeserializeObject<List<MarcasResponse>>(
@@ -137,17 +131,48 @@ namespace Threads
 
                     SpinnerMarcaAdapter spinnerAdapter = new SpinnerMarcaAdapter(this, MarcasVeiculos);
 
-                    spinnerMarca.Adapter = spinnerAdapter;
-                    spinnerMarca.ItemSelected += Spinner1_ItemSelected;
+                    RunOnUiThread(() =>
+                    {
+                        spinnerMarca.Adapter = spinnerAdapter;
+                        spinnerMarca.ItemSelected += Spinner1_ItemSelected;
+                    });                    
                 }
                 catch (Exception ex)
                 {
-                    //RunOnUiThread(() =>
-                    //{
+                    RunOnUiThread(() =>
+                    {
                         Toast.MakeText(this, ex.Message.ToString(), ToastLength.Long).Show();
-                    //});                    
+                    });
                 }
-            //});                                   
+            });
+        }
+
+        private void ListarModelos()
+        {
+            Task.Run(() =>
+            {
+                try
+                {
+                    List<ModelosResponse> ModelosMarca = JsonConvert.DeserializeObject<List<ModelosResponse>>(
+                        RouteManager.ListarModelos(new ModelosRequest(), MarcaId).Content
+                    );
+
+                    SpinnerModeloAdapter spinnerAdapter = new SpinnerModeloAdapter(this, ModelosMarca);
+
+                    RunOnUiThread(() =>
+                    {
+                        spinnerModelo.Adapter       = spinnerAdapter;
+                        spinnerModelo.ItemSelected += SpinnerModelo_ItemSelected; ;
+                    });
+                }
+                catch (Exception ex)
+                {
+                    RunOnUiThread(() =>
+                    {
+                        Toast.MakeText(this, ex.Message.ToString(), ToastLength.Long).Show();
+                    });
+                }
+            });
         }
 
         #endregion
@@ -157,10 +182,12 @@ namespace Threads
         public class SpinnerMarcaAdapter : ArrayAdapter<MarcasResponse>
         {
             private LayoutInflater inflater;
+            public List<MarcasResponse> Items;
 
             public SpinnerMarcaAdapter(Context context, List<MarcasResponse> Marcas) : base(context, 0, Marcas)
             {
-                inflater = LayoutInflater.From(context);
+                inflater   = LayoutInflater.From(context);
+                this.Items = Marcas;
             }
 
             public override View GetView(int position, View convertView, ViewGroup parent)
@@ -179,6 +206,33 @@ namespace Threads
             {
                 return GetView(position, convertView, parent);
             }
+        }
+
+        public class SpinnerModeloAdapter : ArrayAdapter<ModelosResponse>
+        {
+            private LayoutInflater inflater;
+
+            public SpinnerModeloAdapter(Context context, List<ModelosResponse> Marcas) : base(context, 0, Marcas)
+            {
+                inflater = LayoutInflater.From(context);
+            }
+
+            public override View GetView(int position, View convertView, ViewGroup parent)
+            {
+                View view = convertView;
+                view ??= inflater.Inflate(Resource.Layout.TabelaFipe_ConsultaVeiculo_Modelos_Row, null);
+
+                ModelosResponse modelo = GetItem(position);
+                if (modelo != null)
+                {
+                    view.FindViewById<TextView>(Resource.Id.TabelaFipe_ConsultaVeiculo_Modelos_Row_txtNomeModelo).Text = modelo.Model;
+                    view.FindViewById<TextView>(Resource.Id.TabelaFipe_ConsultaVeiculo_Modelos_Row_txtAno).Text = modelo.Years;
+                }                   
+
+                return view;
+            }
+
+            public override View GetDropDownView(int position, View convertView, ViewGroup parent) => GetView(position, convertView, parent);            
         }
 
         #endregion

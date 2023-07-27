@@ -1,6 +1,9 @@
 ﻿using Threads.Models;
 using RestSharp;
 using System;
+using Newtonsoft.Json;
+using static Threads.MainActivity;
+using System.Collections.Generic;
 
 namespace Threads.API
 {
@@ -9,16 +12,14 @@ namespace Threads.API
         public const string BASE_URL = "https://api.invertexto.com/v1/fipe/";
 
         public static RestResponse SendRequest(string rota, Method method, BaseRequest baseRequest)
-        {
-            RestClient client   = new RestClient(BASE_URL + rota);
-            RestRequest request = new RestRequest() { Method = method };
-
+        {        
+            RestRequest request = new RestRequest() { Method = Method.Get };
             request.AddObject(baseRequest);
 
             // envia a requisição
-            RestResponse response = client.Execute(request);
+            RestResponse response = GetRestClientSingleton.GetRestClient(rota).Execute(request);
 
-            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            if (response.IsSuccessful)
             {
                 if (response.Content != null)
                     return response;
@@ -27,7 +28,6 @@ namespace Threads.API
             }
             else
                 throw new Exception(response.StatusCode + " - " + response.StatusDescription + " - " + response.ErrorMessage);
-
         }
     }
 }
